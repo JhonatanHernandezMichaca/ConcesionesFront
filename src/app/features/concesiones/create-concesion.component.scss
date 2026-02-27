@@ -1,0 +1,221 @@
+:host {
+  display: block;
+  color: #eaf2ee;
+}
+
+.page {
+  min-height: calc(100vh - 24px);
+  padding: 28px 16px;
+  background:
+    radial-gradient(900px 450px at 20% 0%, rgba(0, 122, 83, 0.30), transparent 60%),
+    radial-gradient(700px 400px at 90% 10%, rgba(255, 200, 69, 0.12), transparent 55%),
+    radial-gradient(900px 520px at 40% 100%, rgba(0, 122, 83, 0.18), transparent 60%),
+    #0b1110;
+}
+
+.card {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.head {
+  margin-bottom: 14px;
+
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 6px 0 0;
+    opacity: 0.82;
+    font-size: 13px;
+  }
+}
+
+.form {
+  margin-top: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr;
+  gap: 30px;
+}
+
+@media (max-width: 680px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: block;
+
+  span {
+    display: block;
+    font-size: 12px;
+    opacity: 0.86;
+    margin-bottom: 8px;
+  }
+
+  input,
+  select {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.25);
+    color: #eaf2ee;
+    outline: none;
+    transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+  }
+
+  input::placeholder {
+    color: rgba(234, 242, 238, 0.55);
+  }
+
+  input:focus,
+  select:focus {
+    border-color: rgba(255, 200, 69, 0.55);
+    box-shadow: 0 0 0 4px rgba(255, 200, 69, 0.12);
+  }
+
+  small {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(255, 154, 154, 0.95);
+  }
+}
+
+/* Alerts */
+.alerts {
+  margin-top: 12px;
+}
+
+.alert {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.alert.danger {
+  border-color: rgba(255, 120, 120, 0.30);
+  background: rgba(255, 120, 120, 0.10);
+  color: #ffd1d1;
+}
+
+.alert.ok {
+  border-color: rgba(64, 220, 150, 0.25);
+  background: rgba(64, 220, 150, 0.10);
+  color: #d7ffe9;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #eaf2ee;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+  font-weight: 650;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn:active {
+  transform: translateY(0px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.btn.primary {
+  border-color: rgba(255, 200, 69, 0.35);
+  background: rgba(255, 200, 69, 0.14);
+}
+
+.btn.primary:hover {
+  border-color: rgba(255, 200, 69, 0.55);
+  background: rgba(255, 200, 69, 0.18);
+}
+
+.dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+
+  background: rgba(10, 14, 12, 0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+  backdrop-filter: blur(10px);
+}
+
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: rgba(255,255,255,0.92);
+}
+
+.dropdown-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.dropdown-item.muted {
+  cursor: default;
+  color: rgba(255,255,255,0.60);
+}
+
+.dropdown-item .primary {
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.dropdown-item .secondary {
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+}

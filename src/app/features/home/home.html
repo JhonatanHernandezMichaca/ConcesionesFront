@@ -1,0 +1,205 @@
+<div class="page">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">PV</div>
+      <div class="titles">
+        <h1>PuntoVenta</h1>
+<p *ngIf="me">Sesión: {{ me?.nombre || me?.name || '-' }} · {{ me?.rol || me?.role || '-' }}</p>      </div>
+    </div>
+
+ <div class="actions">
+  <button class="btn primary" *ngIf="isSuperadmin" (click)="agregarPersona()">
+    Agregar persona
+  </button>
+
+  <button class="btn ghost" *ngIf="isSuperadmin" (click)="irNuevaConcesion()">
+    Nueva concesión
+  </button>
+
+  <button class="btn ghost" (click)="logout()">Cerrar sesión</button>
+</div>
+  </header>
+
+  <main class="content">
+    <section class="card" *ngIf="loading">
+      <div class="skeleton">
+        <div class="line w40"></div>
+        <div class="line w70"></div>
+        <div class="line w60"></div>
+      </div>
+    </section>
+
+    <section class="card danger" *ngIf="!loading && error">
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+    </section>
+
+    <!-- SUPERADMIN -->
+<ng-container *ngIf="!loading && !error && (isSuperadmin || isAdmin)">      <section class="leaderboard">
+        <div class="lb-header">
+          <div class="lb-title">
+            <h2>Concesiones</h2>
+<p>{{ isSuperadmin ? 'Ranking general' : 'Tu concesión' }}</p>
+          </div>
+
+        </div>
+
+        <div class="card danger" *ngIf="errorConcesiones" style="margin-bottom:12px;">
+  <h3>Error</h3>
+  <p>{{ errorConcesiones }}</p>
+</div>
+        <div class="lb-table">
+ 
+
+  <!-- Loading concesiones -->
+  <div class="lb-row" *ngIf="loadingConcesiones">
+    <div class="col rank"><div class="rank-badge">...</div></div>
+    <div class="col name">
+      <div class="shield"><span class="star">★</span></div>
+      <div class="name-text">Cargando concesiones...</div>
+    </div>
+    <div class="col score"><div class="score-box">...</div></div>
+  </div>
+
+  <!-- Lista real -->
+<div class="lb-row" [class.clickable]="isSuperadmin"
+     *ngFor="let c of concesiones"
+     (click)="isSuperadmin ? abrirSucursalModal(c) : null">    <div class="col rank">
+      <div class="rank-badge">{{ c.rank }}</div>
+    </div>
+
+    <div class="col name">
+      <div class="shield">
+        <span class="star">★</span>
+      </div>
+
+      <div class="name-text">
+        {{ c.name }}
+        <span style="opacity:.7; font-weight:600; margin-left:8px;" *ngIf="!c.activo">
+          (inactiva)
+        </span>
+      </div>
+    </div>
+
+    <div class="col score">
+      <div class="score-box">{{ c.score }}</div>
+    </div>
+  </div>
+
+  <!-- Empty -->
+  <div class="lb-row" *ngIf="!loadingConcesiones && concesiones.length === 0 && !errorConcesiones">
+    <div class="col rank"><div class="rank-badge">—</div></div>
+    <div class="col name">
+      <div class="shield"><span class="star">★</span></div>
+      <div class="name-text">No hay concesiones</div>
+    </div>
+    <div class="col score"><div class="score-box">—</div></div>
+  </div>
+</div>
+
+        <div class="lb-footer">
+          <span>Vista SUPERADMIN</span>
+          <span class="dot"></span>
+       </div>
+      </section>
+    </ng-container>
+
+    <!-- NO SUPERADMIN (placeholder por ahora) -->
+    <ng-container *ngIf="!loading && !error && !isSuperadmin">
+
+    </ng-container>
+  </main>
+  <!-- Modal: Agregar sucursal -->
+<div class="modal-backdrop" *ngIf="showSucursalModal" (click)="cerrarSucursalModal()"></div>
+
+<div class="modal" *ngIf="showSucursalModal">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div>
+<h3>Sucursales</h3>
+        <p *ngIf="selectedConcesion">Concesión: <b>{{ selectedConcesion.name }}</b></p>
+      </div>
+<div class="modal-head__actions">
+  <button class="btn ghost mini" type="button" (click)="abrirFormSucursal()">
+    Nueva sucursal
+  </button>
+
+  <button class="btn ghost" type="button" (click)="cerrarSucursalModal()">
+    Cerrar
+  </button>
+</div>    </div>
+
+    <form class="modal-form" [formGroup]="sucursalForm" (ngSubmit)="guardarSucursal()">
+      <div class="sucursal-form" *ngIf="showSucursalForm">
+      <label class="field">
+        <span>Zona</span>
+        <select formControlName="zona_id">
+<option value="" disabled>Selecciona zona</option>
+<option *ngFor="let z of zonas" [value]="z.id">{{ z.zona }}</option>        </select>
+        <small *ngIf="sucursalForm.controls.zona_id.touched && sucursalForm.controls.zona_id.invalid">
+          Zona requerida
+        </small>
+      </label>
+
+<p style="grid-column: 1 / -1; margin: 6px 0 0; opacity: .85;">
+  Encargado: <b>{{ encargadoNombre || selectedConcesion?.idUser || '-' }}</b>
+</p>
+      <label class="field">
+  <span>Número de cajas</span>
+  <input type="number" formControlName="numeroCajas" min="1" max="20" />
+  <small *ngIf="sucursalForm.controls.numeroCajas.touched && sucursalForm.controls.numeroCajas.invalid">
+    Debe ser mínimo 1
+  </small>
+</label>
+
+      <div class="alerts" *ngIf="sucError || sucOkMsg" style="grid-column: 1 / -1;">
+        <div class="alert danger" *ngIf="sucError">{{ sucError }}</div>
+        <div class="alert ok" *ngIf="sucOkMsg">{{ sucOkMsg }}</div>
+      </div>
+      </div>
+<section class="suc-list">
+
+
+  <div class="alert danger" *ngIf="sucListError">{{ sucListError }}</div>
+
+  <div class="suc-list__empty" *ngIf="!sucListLoading && !sucListError && sucursalesDeConcesion.length === 0">
+    No hay sucursales registradas aún.
+  </div>
+
+  <div class="suc-list__grid" *ngIf="!sucListLoading && sucursalesDeConcesion.length > 0">
+    <article class="suc-item" *ngFor="let s of sucursalesDeConcesion">
+      <div class="suc-item__top">
+        <div class="suc-item__name">
+  <span class="chip">Zona</span>
+  <span class="mono">{{ zonaNombrePorId(s.zona_id) }}</span>
+</div>
+
+        <span class="pill" [class.off]="!s.activo">
+          {{ s.activo ? 'Activa' : 'Inactiva' }}
+        </span>
+      </div>
+
+      <div class="suc-item__meta">
+
+
+        <div class="meta right">
+          <div class="meta__k">Cajas</div>
+          <div class="meta__v">{{ s.cajasCount }}</div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+<div class="modal-actions" *ngIf="showSucursalForm">
+  <button class="btn ghost" type="button" (click)="cancelarFormSucursal()" [disabled]="sucLoading">
+    Cancelar
+  </button>
+
+  <button class="btn primary" type="submit" [disabled]="sucLoading">
+    {{ sucLoading ? 'Guardando...' : 'Guardar sucursal' }}
+  </button>
+</div>
+    </form>
+  </div>
+</div>
+</div>

@@ -1,0 +1,93 @@
+<div class="page">
+  <div class="card">
+    <div class="head">
+      <h2>Nueva concesión</h2>
+      <p>Alta de concesión (solo SUPERADMIN)</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+      <div class="grid">
+  
+<label class="field" style="position:relative;">
+  <span>Encargado (ADMIN)</span>
+
+  <input
+    type="text"
+    placeholder="Escribe un nombre o correo..."
+    [value]="selectedUserLabel || userQuery"
+    (input)="onUserInput($any($event.target).value)"
+    (focus)="openUserDropdown()"
+    (blur)="closeUserDropdown()"
+    autocomplete="off"
+  />
+
+  <!-- Dropdown -->
+  <div class="dropdown" *ngIf="dropdownOpen">
+    <div class="dropdown-item muted" *ngIf="usersLoading">Cargando...</div>
+    <div class="dropdown-item muted" *ngIf="!usersLoading && usuariosFiltrados.length === 0">
+      Sin resultados
+    </div>
+
+    <button
+      type="button"
+      class="dropdown-item"
+      *ngFor="let u of usuariosFiltrados"
+      (mousedown)="selectUser(u)"
+    >
+      <div class="primary">{{ u.nombre }}</div>
+      <div class="secondary" *ngIf="u.email">{{ u.email }}</div>
+    </button>
+  </div>
+
+  <small *ngIf="usersError">{{ usersError }}</small>
+
+  <small *ngIf="form.controls.idUser.touched && form.controls.idUser.invalid">
+    Encargado requerido
+  </small>
+</label>
+
+
+
+        <label class="field">
+          <span>Nombre</span>
+          <input type="text" formControlName="nombre" placeholder="Ej. TOP FRIES" />
+          <small *ngIf="form.controls.nombre.touched && form.controls.nombre.invalid">
+            Nombre requerido (mínimo 2 caracteres)
+          </small>
+        </label>
+       <label class="field">
+  <span>Imágenes (opcional)</span>
+  <input
+    type="text"
+    formControlName="imagenesCsv"
+    placeholder="URL1"
+  />
+
+</label>
+        <label class="field">
+          <span>Activo</span>
+          <select formControlName="activo">
+            <option [ngValue]="true">Sí</option>
+            <option [ngValue]="false">No</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="alerts" *ngIf="error || okMsg">
+        <div class="alert danger" *ngIf="error">{{ error }}</div>
+        <div class="alert ok" *ngIf="okMsg">{{ okMsg }}</div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn ghost" (click)="cancelar()" [disabled]="loading">
+          Cancelar
+        </button>
+
+        <button type="submit" class="btn primary" [disabled]="loading">
+          <span *ngIf="!loading">Guardar</span>
+          <span *ngIf="loading">Guardando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
