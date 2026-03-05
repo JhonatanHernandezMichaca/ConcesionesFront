@@ -64,9 +64,10 @@ export class ConcessionsService {
 create(idUser: string, body: CreateConcesionBody) {
   const params = new HttpParams().set('idUser', idUser);
 
-  // fallback: algunos backends validan idUser en body aunque Swagger diga query
-  const payload: any = { ...body, idUser };
-
-  return this.http.post<Envelope<any>>(`${this.baseUrl}/api/concessions`, payload, { params });
+  return this.http.post<Envelope<any>>(
+    `${this.baseUrl}/api/concessions`,
+    body,
+    { params }
+  );
 }
 }

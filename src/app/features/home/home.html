@@ -35,7 +35,8 @@
     </section>
 
     <!-- SUPERADMIN -->
-<ng-container *ngIf="!loading && !error && (isSuperadmin || isAdmin)">      <section class="leaderboard">
+<ng-container *ngIf="!loading && !error && isSuperadmin">
+      <section class="leaderboard">
         <div class="lb-header">
           <div class="lb-title">
             <h2>Concesiones</h2>
@@ -98,16 +99,85 @@
 </div>
 
         <div class="lb-footer">
-          <span>Vista SUPERADMIN</span>
+          <span>Vista:  · {{ me?.rol || me?.role || '-' }}</span>
           <span class="dot"></span>
        </div>
       </section>
     </ng-container>
 
-    <!-- NO SUPERADMIN (placeholder por ahora) -->
-    <ng-container *ngIf="!loading && !error && !isSuperadmin">
+  
+    <!-- ADMIN -->
+<ng-container *ngIf="!loading && !error && isAdmin">
 
-    </ng-container>
+  <!-- Tarjeta: Concesión -->
+  <section class="leaderboard">
+    <div class="lb-header">
+      <div class="lb-title">
+        <h2>{{ concesionAdmin?.name || concesiones[0]?.name || 'Mi concesión' }}</h2>
+        <p>Administra sucursales, inventario y productos</p>
+      </div>
+
+      <!-- Botones (acciones admin) -->
+      <div class="admin-actions">
+        <button class="btn primary" type="button" (click)="irAgregarInventario()">
+          Agregar inventario
+        </button>
+
+
+
+        <button class="btn ghost" type="button" (click)="irAgregarProducto()">
+          Agregar producto
+        </button>
+      </div>
+    </div>
+
+    <!-- Sucursales -->
+    <section class="suc-list" style="border-top: 0; padding-top: 0; margin-top: 8px;">
+      <div class="alert danger" *ngIf="sucListError">{{ sucListError }}</div>
+
+      <div class="suc-list__empty"
+           *ngIf="!sucListLoading && !sucListError && sucursalesDeConcesion.length === 0">
+        No tienes sucursales registradas todavía.
+      </div>
+
+      <div class="suc-list__grid" *ngIf="!sucListLoading && sucursalesDeConcesion.length > 0">
+        <article class="suc-item" *ngFor="let s of sucursalesDeConcesion">
+          <div class="suc-item__top">
+            <div class="suc-item__name">
+              <span class="chip">Zona</span>
+              <span class="mono">{{ zonaNombrePorId(s.zona_id) }}</span>
+            </div>
+
+            <span class="pill" [class.off]="!s.activo">
+              {{ s.activo ? 'Activa' : 'Inactiva' }}
+            </span>
+          </div>
+
+ <div class="suc-item__meta">
+  <div></div>
+
+  <div class="meta right">
+    <div class="meta__k">Cajas</div>
+    <div class="meta__v">{{ s.cajasCount }}</div>
+
+    <button class="btn ghost mini suc-btn"
+            type="button"
+            (click)="irAgregarInventarioPorSucursal(s)">
+      Inventario
+    </button>
+  </div>
+</div>
+        </article>
+      </div>
+    </section>
+
+    <div class="lb-footer">
+      <span>Vista: ADMIN</span>
+      <span class="dot"></span>
+    </div>
+  </section>
+
+</ng-container>
   </main>
   <!-- Modal: Agregar sucursal -->
 <div class="modal-backdrop" *ngIf="showSucursalModal" (click)="cerrarSucursalModal()"></div>
@@ -120,9 +190,17 @@
         <p *ngIf="selectedConcesion">Concesión: <b>{{ selectedConcesion.name }}</b></p>
       </div>
 <div class="modal-head__actions">
-  <button class="btn ghost mini" type="button" (click)="abrirFormSucursal()">
-    Nueva sucursal
-  </button>
+ <button class="btn ghost mini" type="button"
+        (click)="showSucursalForm ? cancelarFormSucursal() : abrirFormSucursal()">
+  {{ showSucursalForm ? 'Cancelar' : 'Nueva sucursal' }}
+</button>
+
+<button class="btn primary mini"
+        type="button"
+        (click)="irCrearInventarioDesdeModal()"
+        [disabled]="!selectedConcesion?.id">
+  Agregar inventario
+</button>
 
   <button class="btn ghost" type="button" (click)="cerrarSucursalModal()">
     Cerrar
@@ -185,6 +263,9 @@
         <div class="meta right">
           <div class="meta__k">Cajas</div>
           <div class="meta__v">{{ s.cajasCount }}</div>
+          <button class="btn ghost mini" type="button" (click)="irCrearInventarioDesdeSucursal(s)">
+  Inventario
+</button>
         </div>
       </div>
     </article>

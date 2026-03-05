@@ -33,6 +33,7 @@ export class HomeComponent {
   rol: Rol = '';
   isSuperadmin = false;
   isAdmin = false;
+  concesionAdmin: { id: string; name: string } | null = null;
 
 concesiones: Array<{
   rank: number;
@@ -135,37 +136,45 @@ zonaNombrePorId(zonaId?: string): string {
 irNuevaConcesion() {
   this.router.navigateByUrl('/concesiones/nueva');
 }
-  private cargarConcesiones() {
+private cargarConcesiones() {
   this.loadingConcesiones = true;
   this.errorConcesiones = '';
 
   this.concessions.list().subscribe({
     next: (items: Concesion[]) => {
       const meUid = this.me?.uid ?? this.me?.user_id ?? this.me?.userId ?? '';
-let list = [...items];
+      let list = [...items];
 
-if (this.isAdmin && meUid) {
-  list = list.filter(c => (c.idUser || '') === meUid);
-}
-      // Rank basado en orden alfabético (puedes cambiarlo luego)
-     const sorted = list.sort((a, b) =>
-  String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es')
-);
+      if (this.isAdmin && meUid) {
+        list = list.filter(c => (c.idUser || '') === meUid);
+      }
 
- this.concesiones = sorted.map((c, i) => ({
-  id: c.id,
-  idUser: (c as any).idUser || '', // <-- NUEVO (viene de Firestore)
-  activo: c.activo,
-  rank: i + 1,
-  name: c.nombre,
-  score: typeof c.score === 'number' ? c.score : 0,
-}));
+      const sorted = list.sort((a, b) =>
+        String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es')
+      );
+
+      this.concesiones = sorted.map((c, i) => ({
+        id: c.id,
+        idUser: (c as any).idUser || '',
+        activo: c.activo,
+        rank: i + 1,
+        name: c.nombre,
+        score: typeof c.score === 'number' ? c.score : 0,
+      }));
+
+      // ✅ AQUÍ VA (DESPUÉS de llenar this.concesiones)
+      if (this.isAdmin && this.concesiones.length > 0) {
+        const c0 = this.concesiones[0];
+        this.concesionAdmin = { id: c0.id, name: c0.name };
+
+        if (this.zonas.length === 0) this.cargarZonas();
+        this.cargarSucursalesDeConcesion(c0.id);
+      }
 
       this.loadingConcesiones = false;
     },
     error: (e) => {
-      this.errorConcesiones =
-        e?.error?.message || e?.message || 'Error cargando concesiones';
+      this.errorConcesiones = e?.error?.message || e?.message || 'Error cargando concesiones';
       this.loadingConcesiones = false;
     },
   });
@@ -300,6 +309,59 @@ console.log('STATUS', e?.status);
       this.sucLoading = false;
       
     },
+  });
+}
+irAgregarInventario() {
+  console.log('ADMIN → Agregar inventario');
+  // luego: this.router.navigateByUrl('/inventarios/nuevo');
+}
+
+irAgregarInventarioPorSucursal(s: { id: string; zona_id?: string }) {
+  console.log('ADMIN → Inventario por sucursal', s?.id, s?.zona_id);
+  // luego: this.router.navigate(['/inventarios/por-sucursal', s.id]);
+}
+
+irAgregarProducto() {
+  const concesionId =
+    this.concesionAdmin?.id ||
+    this.concesiones?.[0]?.id ||
+    '';
+
+  if (!concesionId) return;
+
+  this.router.navigate(['/inventarios/nuevo'], { // luego renombramos ruta
+    queryParams: { concesionId },
+  });
+}
+irCrearInventarioDesdeModal() {
+  const concesionId = this.selectedConcesion?.id;
+  if (!concesionId) {
+    this.sucError = 'Primero abre una concesión (clic en la lista) para ver sucursales.';
+    return;
+  }
+
+  this.cerrarSucursalModal(); // opcional
+  this.router.navigate(['/inventarios/nuevo'], {
+    queryParams: { concesionId },
+  });
+}
+
+irCrearInventarioDesdeSucursal(s: { id: string }) {
+  const concesionId = this.selectedConcesion?.id;
+  const sucursalId = s?.id;
+
+  if (!concesionId) {
+    this.sucError = 'Primero abre una concesión (clic en la lista).';
+    return;
+  }
+  if (!sucursalId) {
+    this.sucError = 'Sucursal inválida.';
+    return;
+  }
+
+  this.cerrarSucursalModal(); // opcional
+  this.router.navigate(['/inventarios/nuevo'], {
+    queryParams: { concesionId, sucursalId },
   });
 }
 }

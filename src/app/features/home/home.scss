@@ -319,6 +319,12 @@
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
+.modal-head__actions{
+  display:flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .modal-head h3 {
   margin: 0;
   font-size: 18px;
@@ -494,10 +500,20 @@
   opacity: .8;
 }
 
-/* Botón cerrar del header (ghost) */
+/* Botones del header (Nueva sucursal + Cerrar) */
 .modal-head .btn.ghost{
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-radius: 12px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Si usas mini en el header, iguala altura/padding */
+.modal-head .btn.ghost.mini{
+  padding: 9px 12px;
+  height: 38px;
+  font-size: 12px;
 }
 
 /* Actions */
@@ -681,9 +697,4 @@
   .suc-list__grid{
     max-height: 260px;
   }
-}
-.modal-head__actions{
-  display:flex;
-  gap: 10px;
-  align-items: center;
 }

@@ -1,0 +1,304 @@
+<div class="page">
+  <header class="topbar">
+    <div class="titles">
+      <h1>Agregar producto</h1>
+<p class="muted">Concesión: <b>{{ concesionNombre || concesionId }}</b></p>
+    </div>
+
+<div class="actions">
+  <button class="btn ghost" type="button" (click)="cancelar()">Cancelar</button>
+
+<button class="btn primary" type="button" (click)="abrirProductModal()">
+  Agregar producto
+</button>
+</div>
+  </header>
+
+  <main class="content">
+    <section class="card" *ngIf="loading">
+      <div class="muted">Cargando...</div>
+    </section>
+
+    <section class="card danger" *ngIf="!loading && error">
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+    </section>
+
+    <section class="card ok" *ngIf="!loading && okMsg">
+      <h3>Listo</h3>
+      <p>{{ okMsg }}</p>
+    </section>
+
+  </main>
+  <!-- ===== Modal Agregar producto ===== -->
+<div class="modal-backdrop" *ngIf="showProductModal" (click)="cerrarProductModal()"></div>
+
+<div class="modal" *ngIf="showProductModal">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div>
+        <h3>Agregar producto</h3>
+        <p class="muted">Concesión: <b>{{ concesionNombre || concesionId }}</b></p>
+      </div>
+
+      <div class="modal-head__actions">
+        <button class="btn ghost" type="button" (click)="cerrarProductModal()">Cancelar</button>
+        <button class="btn primary" type="button" (click)="guardar()" [disabled]="saving">
+          {{ saving ? 'Guardando...' : 'Guardar producto' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card danger" *ngIf="error" style="margin-top:10px;">
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+    </div>
+
+    <div class="card ok" *ngIf="okMsg" style="margin-top:10px;">
+      <h3>Listo</h3>
+      <p>{{ okMsg }}</p>
+    </div>
+
+    <form class="modal-form" [formGroup]="form" style="margin-top:12px;">
+      <div class="row one">
+        <label class="field">
+          <span>Nombre</span>
+          <input type="text" formControlName="nombre" placeholder="Ej. CERVEZA" />
+          <small *ngIf="form.controls.nombre.touched && form.controls.nombre.invalid">Requerido</small>
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Precio</span>
+          <input type="number" formControlName="precio" min="0" placeholder="Ej. 65" />
+          <small *ngIf="form.controls.precio.touched && form.controls.precio.invalid">Requerido</small>
+        </label>
+
+        <label class="field">
+          <span>Activo</span>
+          <select formControlName="activo">
+            <option [ngValue]="true">Sí</option>
+            <option [ngValue]="false">No</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Imágenes</span>
+
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          (change)="onPickImages($event)"
+        />
+
+        <small class="hint">Selecciona 1 o más imágenes.</small>
+
+        <div class="img-preview" *ngIf="imagesPreview.length > 0">
+          <img *ngFor="let src of imagesPreview" [src]="src" alt="preview" />
+        </div>
+      </label>
+    </form>
+  </div>
+</div>
+  <!-- ===== Modal Inventario por Jornada ===== -->
+
+<section class="card">
+  <form class="modal-form" [formGroup]="invForm">
+  <div class="inv-top">
+  <div class="inv-top__header">
+    <div class="inv-top__titles">
+      <h3>{{ modoInventarioSucursal ? 'Inventario por sucursal' : 'Inventario por jornada' }}</h3>
+      <p class="muted">Concesión: <b>{{ concesionNombre }}</b></p>
+    </div>
+
+    <div class="inv-top__actions">
+      <button
+        class="btn ghost"
+        type="button"
+        *ngIf="!modoInventarioSucursal"
+        (click)="activarModoSucursal()">
+        Agregar inventario por sucursal
+      </button>
+
+      <button
+        class="btn ghost"
+        type="button"
+        *ngIf="modoInventarioSucursal"
+        (click)="desactivarModoSucursal()">
+        Volver a inventario general
+      </button>
+
+      <button class="btn primary" type="button" (click)="guardarInventario()" [disabled]="invSaving">
+        {{
+          invSaving
+            ? 'Guardando...'
+            : (modoInventarioSucursal ? 'Guardar inventario sucursal' : 'Guardar inventario')
+        }}
+      </button>
+    </div>
+  </div>
+
+  <div class="inv-top__body" *ngIf="modoInventarioSucursal">
+    <div class="row one" style="margin-top:12px;">
+      <label class="field inv-sucursal-field">
+        <span>Sucursal</span>
+        <select formControlName="sucursalId">
+          <option value="">Selecciona...</option>
+          <option *ngFor="let s of sucursalesDisponiblesParaCaptura" [value]="s.id">
+  {{ s.zonaNombre || 'Sin zona' }}
+</option>
+        </select>
+      </label>
+    </div>
+
+    <div
+      class="muted"
+      *ngIf="modoInventarioSucursal && sucursalesGuardadas.length > 0"
+      style="margin-top:8px;">
+      Sucursales ya capturadas: {{ sucursalesGuardadas.length }} de {{ sucursales.length }}
+    </div>
+  </div>
+</div>
+
+ <!-- ===== Mini modal: cantidad + precio ===== -->
+<div class="modal-backdrop" *ngIf="showQtyModal" (click)="cerrarQtyModal()"></div>
+
+<div class="modal qty" *ngIf="showQtyModal">
+  <div class="modal-card qty-card" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div>
+        <h3>Agregar a inventario</h3>
+        <p class="muted" *ngIf="selectedProduct">
+          Producto: <b>{{ selectedProduct.nombre }}</b>
+          <span *ngIf="selectedProduct.unidad_medida"> · {{ selectedProduct.unidad_medida }}</span>
+        </p>
+      </div>
+
+      <div class="modal-head__actions">
+        <button class="btn ghost" type="button" (click)="cerrarQtyModal()">Cerrar</button>
+        <button class="btn primary" type="button" (click)="confirmarCantidad()">Agregar</button>
+      </div>
+    </div>
+
+    <!-- Error SOLO si existe -->
+    <div class="card danger" *ngIf="invError" style="margin-top:10px;">
+      <p>{{ invError }}</p>
+    </div>
+
+    <!-- Inputs SIEMPRE visibles -->
+    <div class="row" style="margin-top:12px;">
+      <label class="field">
+        <span>Cantidad</span>
+      <input
+  type="number"
+  [(ngModel)]="qtyValue"
+  [ngModelOptions]="{ standalone: true }"
+  min="1"
+/>
+      </label>
+
+      <label class="field">
+        <span>Precio (jornada)</span>
+<input
+  type="number"
+  [(ngModel)]="priceValue"
+  [ngModelOptions]="{ standalone: true }"
+  min="0"
+  step="0.01"
+/>
+      </label>
+    </div>
+
+    <div class="muted" style="margin-top:10px;">
+      Se sumará si el producto ya está en la lista.
+    </div>
+  </div>
+</div>
+
+    <div class="card ok" *ngIf="invOkMsg" style="margin-top:10px;">
+      <p>{{ invOkMsg }}</p>
+    </div>
+
+
+      <div class="row">
+  <label class="field" style="grid-column: 1 / -1;">
+    <span>Buscar producto</span>
+<input
+  type="text"
+  [(ngModel)]="searchProducto"
+  [ngModelOptions]="{ standalone: true }"
+  placeholder="Ej. Cerveza, agua, papas..."
+/>
+    <small class="hint">Toca una tarjeta para seleccionar.</small>
+  </label>
+</div>
+
+<div class="catalogo" *ngIf="!invLoading">
+  <div
+    class="pcard"
+    *ngFor="let p of productosCatalogoFiltrados"
+    (click)="abrirQtyModal(p)"  >
+    
+<img class="pimg-card" *ngIf="p.imagenes?.length" [src]="p.imagenes?.[0]" alt="img" />
+    <div class="pinfo">
+      <div class="ptitle">{{ p.nombre }}</div>
+
+      <div class="pmeta">
+        <span *ngIf="p.unidad_medida">Unidad: {{ p.unidad_medida }}</span>
+        <span *ngIf="p.precio != null"> · ${{ p.precio }}</span>
+      </div>
+
+      <div class="pfoot">
+        <span class="badge" *ngIf="cantidadEnLista(p.id) > 0">
+          En lista: {{ cantidadEnLista(p.id) }}
+        </span>
+
+        <span class="chipSel" *ngIf="selectedProduct?.id === p.id">Seleccionado</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="muted" *ngIf="!invLoading && productosCatalogoFiltrados.length === 0">
+  No hay productos con ese nombre.
+</div>
+
+      <div class="table" *ngIf="inventarioItems.length > 0" style="margin-top:12px;">
+       <div class="trow thead" style="grid-template-columns: 2fr 1fr 1fr 120px;">
+  <div>Producto</div>
+  <div>Cantidad</div>
+  <div>Precio</div>
+  <div></div>
+</div>
+
+<div class="trow" *ngFor="let it of inventarioItems; let i = index" style="grid-template-columns: 2fr 1fr 1fr 120px;">          <div>
+            <b>{{ it.nombre }}</b>
+            <span class="muted" *ngIf="it.unidad"> · {{ it.unidad }}</span>
+          </div>
+          <div>{{ it.cantidad }}</div>
+          <div>${{ it.precio }}</div>
+          <div class="right">
+            <button class="btn ghost mini" type="button" (click)="quitarDeLista(i)">Quitar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="muted" *ngIf="inventarioItems.length === 0" style="margin-top:10px;">
+        Aún no has agregado productos al inventario.
+      </div>
+<div class="inv-next-sucursal" *ngIf="modoInventarioSucursal && sucursalesGuardadas.length > 0">
+  <button
+    class="btn ghost"
+    type="button"
+    *ngIf="puedeAgregarOtraSucursal"
+    (click)="agregarOtraSucursal()">
+    Agregar inventario de otra sucursal
+  </button>
+
+  <span class="muted" *ngIf="!puedeAgregarOtraSucursal">
+    Ya se capturaron todas las sucursales disponibles.
+  </span>
+</div>

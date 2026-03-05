@@ -8,14 +8,27 @@ type LoginBody = { email: string; password: string };
 // Ajusta si tu backend devuelve otra propiedad (accessToken, data.token, etc.)
 type LoginResponse = { token: string; user?: any };
 
-export type MeResponse = {
+export type MeUsuario = {
   uid: string;
   email: string;
-  nombre: string;
-  rol: 'SUPERADMIN' | 'ADMIN' | 'VENDEDOR' | string;
-  activo: boolean;
-  createdAt?: any;
-  updatedAt?: any;
+  nombre?: string;
+  name?: string;
+  rol?: 'SUPERADMIN' | 'ADMIN' | 'VENDEDOR' | string;
+  role?: 'SUPERADMIN' | 'ADMIN' | 'VENDEDOR' | string;
+  activo?: boolean;
+
+  // flags que vienen en tu response
+  superAdmin?: boolean;
+  isSuperAdmin?: boolean;
+  admin?: boolean;
+  isAdmin?: boolean;
+
+  fecha_nacimiento?: string;
+};
+
+export type MeEnvelope = {
+  success: boolean;
+  usuario: MeUsuario;
 };
 
 const TOKEN_KEY = 'pv_token';
@@ -42,8 +55,7 @@ export class AuthService {
 
   // GET /api/auth/me
   me() {
-    return this.http.get<MeResponse>(`${this.baseUrl}/api/auth/me`);
-  }
+return this.http.get<MeEnvelope>(`${this.baseUrl}/api/auth/me`);  }
 
   logout() {
     localStorage.removeItem(TOKEN_KEY);
